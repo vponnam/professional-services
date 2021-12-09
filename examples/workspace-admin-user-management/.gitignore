@@ -1,0 +1,7 @@
+#Ignore test files
+test/**
+notes.md
+*.old
+bin/rotate-linux
+
+*rotate-darwin*

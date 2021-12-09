@@ -1,0 +1,49 @@
+timeout: 600s
+substitutions:
+  _SERVICEACCOUNT: ''
+  _KEYFILE_NAME: ''
+  _WORKERPOOL_REGION: ''
+  _WORKERPOOL_ID: ''
+  _TF_VERSION: 'latest'
+
+steps:
+  - id: 'Create temporary SA key'
+    name: 'us-central1-docker.pkg.dev/$PROJECT_ID/build-images/terraform:$_TF_VERSION'
+    entrypoint: /bin/bash
+    args:
+      - -c
+      - |
+        echo "creating temporary SA key"
+        gcloud iam service-accounts keys create "/workspace/${_KEYFILE_NAME}" --iam-account=${_SERVICEACCOUNT} --project ${PROJECT_ID}
+
+  - id: 'Rotate SuperAdmin creds'
+    name: 'us-central1-docker.pkg.dev/$PROJECT_ID/build-images/terraform:$_TF_VERSION'
+    entrypoint: /bin/bash
+    args: 
+      - -c
+      - |
+        set -eo pipefail
+
+        export key_file="/workspace/${_KEYFILE_NAME}"
+        export PROJECT_ID=${PROJECT_ID}
+
+        # Go program will rotate SuperAdmins password
+        /workspace/bin/rotate-linux
+
+  - id: 'Delete SA key'
+    name: 'us-central1-docker.pkg.dev/$PROJECT_ID/build-images/terraform:$_TF_VERSION'
+    entrypoint: /bin/bash
+    args:
+      - -c
+      - |
+        set -eo pipefail
+
+        keys=$(gcloud iam service-accounts keys list --iam-account="${_SERVICEACCOUNT}" --project ${PROJECT_ID} --format json  | jq -r '.[] | select(.keyType!="SYSTEM_MANAGED") | .name'  | rev | cut -d "/" -f 1 | rev)
+        echo "Old keyIDs that will be deleted: $keys"
+        for key in $keys
+        do
+          gcloud iam service-accounts keys delete $key --iam-account="${_SERVICEACCOUNT}" --project ${PROJECT_ID} -q
+        done
+
+# options:
+#   workerPool: 'projects/${PROJECT_ID}/locations/${_WORKERPOOL_REGION}/workerPools/${_WORKERPOOL_ID}'
