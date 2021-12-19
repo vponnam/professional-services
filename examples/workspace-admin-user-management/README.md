@@ -36,4 +36,6 @@ Add relavent [substitution variables](https://cloud.google.com/build/docs/config
 ## References:  
 [1] Setting up [Google Workspace Domain-Wide Delegation](https://developers.google.com/admin-sdk/directory/v1/guides/delegation#go)  
 [2] [Instantiating an Admin SDK Directory service object](https://developers.google.com/admin-sdk/directory/v1/guides/delegation#instantiate_an_admin_sdk_directory_service_object) for interacting workspace APIs.  
-[3] Please refer [here](https://gist.github.com/jay0lee/75cbcd8568633ea6efd013a938f3bf25) for bash use-cases to explicitly generating Bearer token for API calls through curl command. However using a [client library](https://developers.google.com/admin-sdk/directory/v1/guides/delegation#instantiate_an_admin_sdk_directory_service_object) is recommended.  
+[3] Please refer [here](https://gist.github.com/jay0lee/75cbcd8568633ea6efd013a938f3bf25) for bash use-cases to explicitly generating Bearer token for API calls through curl command. However using a [client library](https://developers.google.com/admin-sdk/directory/v1/guides/delegation#instantiate_an_admin_sdk_directory_service_object) is recommended.   
+[4] Admin SDK Directory API [go-sdk quick start](https://developers.google.com/admin-sdk/directory/v1/quickstart/go).   
+[5] Directory API [users.patch request](https://developers.google.com/admin-sdk/directory/reference/rest/v1/users/patch) call.  
