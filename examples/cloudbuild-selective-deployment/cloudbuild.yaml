@@ -14,43 +14,47 @@
 
 timeout: 1200s
 substitutions:
-  _TF_SA_EMAIL: ''
+  _TF_SERVICE_ACCOUNT: ''
   _PREVIOUS_COMMIT_SHA: ''
   _RUN_ALL_PROJECTS: 'false'
 steps:
-- id: 'unshallow'
+- id: 'git unshallow'
   name: gcr.io/cloud-builders/git
   args: ['fetch', '--unshallow']
-- id: 'Making build shell scripts executable'
+
+- id: 'build-files permission check'
   name: gcr.io/$PROJECT_ID/terraform:latest
   entrypoint: bash
   args:
   - -c
   - |
-    echo "Making build shell scripts executable."
+    echo "Executable file permissions on build-files directory"
     chmod -R 755 build-files/
+
 # [START Terraform]
-- id: 'selective deployment'
+- id: 'Files changes detection for selective deploy'
   name: gcr.io/$PROJECT_ID/terraform:latest
   entrypoint: bash
   args: 
   - -c
   - |
-    echo "command: . build-files/delta-changes.sh $PROJECT_ID $_DELTA_TRIGGER_NAME $BUILD_ID $COMMIT_SHA $TRIGGER_NAME $_PREVIOUS_COMMIT_SHA"
-    . build-files/delta-changes.sh "$PROJECT_ID" "$_DELTA_TRIGGER_NAME" "$BUILD_ID" "$COMMIT_SHA" "$TRIGGER_NAME" "$_PREVIOUS_COMMIT_SHA" || exit 1
-- id: 'setup'
+    echo "command: . build-files/find-selective-changes.sh $PROJECT_ID $_DELTA_TRIGGER_NAME $BUILD_ID $COMMIT_SHA $TRIGGER_NAME $_PREVIOUS_COMMIT_SHA"
+    . build-files/find-selective-changes.sh "$PROJECT_ID" "$_DELTA_TRIGGER_NAME" "$BUILD_ID" "$COMMIT_SHA" "$TRIGGER_NAME" "$_PREVIOUS_COMMIT_SHA" || exit 1
+
+- id: 'gcloud-cli setup'
   name: gcr.io/cloud-builders/gcloud
   entrypoint: bash
   args:
   - -c
   - |
-    tf_sa_email=${_TF_SA_EMAIL}
-    if [[ -n ${tf_sa_email} ]]; then
+    tf_service_account=${_TF_SERVICE_ACCOUNT}
+    if [[ -n ${tf_service_account} ]]; then
       echo "Setting up gcloud for impersonation"
-      gcloud config set auth/impersonate_service_account $tf_sa_email
+      gcloud config set auth/impersonate_service_account $tf_service_account
     fi
+
 # [START tf-apply]
-- id: 'tf apply'
+- id: 'Terraform Apply'
   name: gcr.io/$PROJECT_ID/terraform:latest
   entrypoint: bash
   args:
