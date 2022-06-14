@@ -53,7 +53,7 @@ def get_all_projects_using_asset_manager(organization, credentials):
     credentials: client credentials
   """
     project_prefix = "//cloudresourcemanager.googleapis.com/projects/"
-    client_v1 = asset_v1.AssetServiceClient(credentials=credentials)
+    client_v1 = asset_v1.AssetServiceClient()
     all_projects = client_v1.search_all_resources(
         scope=organization,
         asset_types=["cloudresourcemanager.googleapis.com/Project"])
