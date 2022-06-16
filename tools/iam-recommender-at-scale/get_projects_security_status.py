@@ -45,7 +45,7 @@ RECOMMENDATION_TYPE = "google.iam.policy.Recommender"
 RATE_LIMIT = (6000, 60)
 
 
-def get_all_projects_using_asset_manager(organization, credentials):
+def get_all_projects_using_asset_manager(organization):
     """Returns project ids using asset manager apis.
 
   Args:
@@ -83,7 +83,7 @@ def accounts_can_made_safe(project_id, state, recommendations):
     }
 
 
-def get_recommendation_summary_of_projects(project_ids, state, credentials):
+def get_recommendation_summary_of_projects(project_ids, state):
     """Returns the summary of recommendations on all the given projects.
 
   Args:
@@ -93,15 +93,13 @@ def get_recommendation_summary_of_projects(project_ids, state, credentials):
   """
     recommender = build("recommender",
                         "v1",
-                        credentials=credentials,
                         cache_discovery=False)
 
     def get_metric(project_id):
         recommendation_metric = common.get_recommendations(
             project_id,
             recommender=recommender,
-            state=state,
-            credentials=credentials)
+            state=state,)
         return accounts_can_made_safe(project_id, state, recommendation_metric)
 
     recommendation_stats = common.rate_limit_execution(get_metric, RATE_LIMIT,
@@ -192,12 +190,12 @@ def main():
 
     logging.basicConfig(format="%(levelname)s[%(asctime)s]:%(message)s",
                         level="INFO")
-    credentials = service_account.Credentials.from_service_account_file(
-        args.service_account_file_path, scopes=SCOPES)
+    # credentials = service_account.Credentials.from_service_account_file(
+    #     args.service_account_file_path, scopes=SCOPES)
     projects = get_all_projects_using_asset_manager(args.organization,
-                                                    credentials)
+                                                    )
     recommendation_data = get_recommendation_summary_of_projects(
-        projects, args.recommendation_state, credentials)
+        projects, args.recommendation_state)
     if not args.to_csv:
         to_print(recommendation_data)
     else:
