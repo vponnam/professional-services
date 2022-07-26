@@ -40,6 +40,7 @@ var (
 	table_name            = os.Getenv("table_name")
 	project_sync          = os.Getenv("project_sync")          //Set to enable for scheduled execution. Default is enable
 	project_sync_interval = os.Getenv("project_sync_interval") // How frequent the BQ data task is executed. Default is 30(mins)
+	asset_api_scope       = os.Getenv("asset_api_scope")       //Ex: "organizations/614859914915"
 )
 
 func checkError(err error) {
@@ -49,6 +50,11 @@ func checkError(err error) {
 	}
 }
 
+/*
+See:
+- https://cloud.google.com/go/docs/reference/cloud.google.com/go/asset/latest/apiv1#cloud_google_com_go_asset_apiv1_Client_SearchAllResources
+- https://cloud.google.com/go/docs/reference/cloud.google.com/go/asset/latest/apiv1
+*/
 func projectIDConverter() {
 	prjIDmap := make(map[string]string)
 
@@ -62,7 +68,7 @@ func projectIDConverter() {
 	defer client.Close()
 
 	req := &assetpb.SearchAllResourcesRequest{
-		Scope:      "organizations/614859914915", // Change this to a variable
+		Scope:      asset_api_scope, // Change this to a variable
 		AssetTypes: []string{"compute.googleapis.com/Project"},
 	}
 
@@ -75,7 +81,7 @@ func projectIDConverter() {
 		}
 
 		// fmt.Printf("%v, \t%v\n", result.DisplayName, strings.Split(result.Project, "/")[1])
-		// Build the hashmap with Number as key and Name as value
+		// Build the hashmap with Number as key and Name as value. projects/1234
 		prjIDmap[strings.Split(result.Project, "/")[1]] = result.DisplayName
 	}
 
@@ -92,7 +98,7 @@ DDL: https://cloud.google.com/bigquery/docs/reference/standard-sql/data-definiti
 */
 func bqWrite(prjmappingData map[string]string) {
 
-	fmt.Println(dataset_projectid, dataset_name, table_name)
+	// fmt.Println(dataset_projectid, dataset_name, table_name)
 	// validation
 	if dataset_projectid == "" || dataset_name == "" || table_name == "" {
 		fmt.Println("One of more of these variable are not found: dataset_projectid|dataset_name|table_name")
@@ -151,7 +157,6 @@ func bqWrite(prjmappingData map[string]string) {
 	missingProjects := removeDups(prjmappingData, bqData)
 
 	// Write missing projects to BQ
-
 	insertValues := []string{}
 
 	for number, id := range missingProjects {
@@ -162,6 +167,7 @@ func bqWrite(prjmappingData map[string]string) {
 	if len(insertValues) >= 1 {
 
 		queryInsert := fmt.Sprintf("INSERT INTO %v (projectNumber, projectID) VALUES %v", table, strings.Join(insertValues[:], ","))
+		// fmt.Println("Insert Query: " + queryInsert)
 		addProject := client.Query(queryInsert)
 
 		insertJob, err := addProject.Run(ctx)

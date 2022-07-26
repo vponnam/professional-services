@@ -10,7 +10,10 @@ This repo contains helper code to support IAM recommender processing and analysi
     export dataset_name="recommenderDatasetName"
     export table_name="table_name" #Ex: "projectnumber_id"
     export project_sync_interval="10" #In minutes, default is set to 30.
+    export asset_api_scope="Parent/ID" #Ex: organizations/number
     ```
+
+1. gcloud auth login --update-adc 
 
 1. Execute the appropriate binary from releases folder.
     ```
