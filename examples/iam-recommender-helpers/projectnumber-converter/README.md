@@ -30,7 +30,7 @@ This repo contains helper code to support IAM recommender processing and analysi
     ```
 
     Compile from source
-    ```
+    ```shell
     env GOOS=darwin GOARCH=amd64 go build -o releases/project_converter-darwin .
     env GOOS=linux GOARCH=amd64 go build -o releases/project_converter-linux .
     env GOOS=windows GOARCH=amd64 go build -o releases/project_converter-windows.exe .
