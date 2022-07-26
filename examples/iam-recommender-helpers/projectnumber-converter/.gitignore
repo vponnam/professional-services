@@ -1,0 +1,16 @@
+**variables.sh**
+**build.sh**
+
+# OSX leaves these everywhere on SMB shares
+._*
+
+# OSX trash
+.DS_Store
+
+# Emacs save files
+*~
+\#*\#
+.\#*
+
+# Visual Studio Code files:
+.vscode/
